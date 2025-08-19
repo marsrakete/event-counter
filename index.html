@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#000000" />
+  <title>Event Counter</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #121212;
+      color: #fff;
+      padding: 1rem;
+      margin: 0;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    button, input {
+      font-size: 1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      border: none;
+      margin: 0.25rem 0;
+    }
+    button {
+      background: #1e88e5;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #1565c0;
+    }
+input[type="text"], input[type="number"] {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1px solid #444;
+      border-radius: 0.5rem;
+      background: #222;
+      color: #fff;
+    }
+    input:disabled {
+      color: #ccc;
+      opacity: 1;
+    }
+    .event {
+      border: 1px solid #444;
+      border-radius: 0.75rem;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      background: #1c1c1c;
+    }
+    .event.terminated {
+      background: #333;
+      color: #ccc;
+    }
+    .buttons, .entry-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .entry-row {
+      align-items: center;
+    }
+    table {
+      width: 100%;
+      margin-top: 1rem;
+      border-collapse: collapse;
+    }
+    td {
+      padding: 0.5rem;
+      border-bottom: 1px solid #333;
+    }
+    .topbar {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    @media (max-width: 600px) {
+      button, input {
+        font-size: 1rem;
+        width: 100%;
+      }
+      .entry-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  .count-buttons button {
+  flex: 1 1 auto;
+  font-size: 1.25rem;
+  font-weight: bold;
+  background-color: #4caf50;
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+.count-buttons button:hover {
+  background-color: #388e3c;
+  transform: scale(1.03);
+}
+.count-buttons button:active {
+  transform: scale(0.97);
+}
+
+</style>
+</head>
+<body>
+  <h1>Event Counter</h1>
+  <div class="topbar">
+    <button onclick="createNewEvent()">+ Neues Event</button>
+  </div>
+  <div id="events"></div>
+  <div style="text-align:center; margin-top:2rem">
+    <button onclick="exportEvents()">📤 Exportieren</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none" onchange="handleImport(event)" />
+    <button onclick="document.getElementById('importFile').click()">📥 Importieren</button>
+  </div>
+
+  <script>
+    let events = JSON.parse(localStorage.getItem("events") || "[]");
+    const eventsDiv = document.getElementById("events");
+
+    function save() {
+  localStorage.setItem("events", JSON.stringify(events));
+  render();
+}
+
+function exportEvents() {
+  const data = JSON.stringify(events, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'events-export.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function handleImport(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const imported = JSON.parse(reader.result);
+      let changed = false;
+      imported.forEach(newEvent => {
+        const idx = events.findIndex(ev => ev.id === newEvent.id);
+        if (idx >= 0) {
+          const overwrite = confirm(`Event '${newEvent.name}' existiert bereits. Überschreiben?`);
+          if (overwrite) {
+            events[idx] = newEvent;
+            changed = true;
+          }
+        } else {
+          events.push(newEvent);
+          changed = true;
+        }
+      });
+      if (changed) save();
+      else alert('Keine Änderungen importiert.');
+    } catch (err) {
+      alert('Fehler beim Import: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+render();
+
+function createNewEvent() {
+      const name = prompt("Event-Name?") || "Neues Event";
+      events.push({
+        id: Date.now(),
+        name,
+        status: "new",
+        entries: [
+          { label: "Mann", count: 0 },
+          { label: "Frau", count: 0 }
+        ]
+      });
+      save();
+    }
+
+    function render() {
+      eventsDiv.innerHTML = "";
+      events.forEach((event, idx) => {
+        const container = document.createElement("div");
+        container.className = "event" + (event.status === "terminated" ? " terminated" : "");
+
+        const nameInput = document.createElement("input");
+        nameInput.value = event.name;
+        nameInput.disabled = event.status === "terminated";
+        nameInput.onchange = e => {
+          event.name = e.target.value;
+          save();
+        };
+        container.appendChild(nameInput);
+
+        if (event.status === "new" || event.status === "running") {
+          event.entries.forEach((entry, i) => {
+            const row = document.createElement("div");
+            row.className = "entry-row";
+            const labelInput = document.createElement("input");
+            labelInput.value = entry.label;
+            labelInput.disabled = event.status === "running";
+            labelInput.onchange = e => {
+              event.entries[i].label = e.target.value;
+              save();
+            };
+            const delBtn = document.createElement("button");
+            delBtn.textContent = "Löschen";
+            delBtn.disabled = event.status === "running";
+            delBtn.onclick = () => {
+              event.entries.splice(i, 1);
+              save();
+            };
+            row.append(labelInput, delBtn);
+            container.appendChild(row);
+          });
+          const addBtn = document.createElement("button");
+          addBtn.textContent = "+ Eintrag";
+          addBtn.disabled = event.status === "running";
+          addBtn.onclick = () => {
+            event.entries.push({ label: "Neuer Eintrag", count: 0 });
+            save();
+          };
+          container.appendChild(addBtn);
+        } else if (event.status === "terminated") {
+          const table = document.createElement("table");
+          event.entries.forEach(entry => {
+            const row = document.createElement("tr");
+            row.innerHTML = `<td>${entry.label}</td><td>${entry.count}</td>`;
+            table.appendChild(row);
+          });
+          container.appendChild(table);
+        }
+
+        if (event.status === "running") {
+          const buttonRow = document.createElement("div");
+          buttonRow.className = "buttons count-buttons";
+          event.entries.forEach((entry, i) => {
+            const btn = document.createElement("button");
+            btn.textContent = `${entry.label} (${entry.count})`;
+            btn.onclick = () => {
+              event.entries[i].count++;
+              save();
+            };
+            buttonRow.appendChild(btn);
+          });
+          container.appendChild(buttonRow);
+        }
+
+        const btnRow = document.createElement("div");
+        btnRow.className = "buttons";
+
+        if (event.status === "new") {
+          const startBtn = document.createElement("button");
+          startBtn.textContent = "Starten";
+          startBtn.onclick = () => {
+            event.status = "running";
+            save();
+          };
+          btnRow.appendChild(startBtn);
+        } else if (event.status === "running") {
+          const stopBtn = document.createElement("button");
+          stopBtn.textContent = "Stoppen";
+          stopBtn.onclick = () => {
+            event.status = "stopped";
+            save();
+          };
+          btnRow.appendChild(stopBtn);
+        } else if (event.status === "stopped") {
+          const resumeBtn = document.createElement("button");
+          resumeBtn.textContent = "Weiterzählen";
+          resumeBtn.onclick = () => {
+            event.status = "running";
+            save();
+          };
+          btnRow.appendChild(resumeBtn);
+        }
+
+        if (event.status !== "terminated") {
+          const terminateBtn = document.createElement("button");
+          terminateBtn.textContent = "Terminieren";
+          terminateBtn.onclick = () => {
+            event.status = "terminated";
+            save();
+          };
+          btnRow.appendChild(terminateBtn);
+        }
+
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "Löschen";
+        delBtn.onclick = () => {
+          if (confirm("Wirklich löschen?")) {
+            events.splice(idx, 1);
+            save();
+          }
+        };
+        btnRow.appendChild(delBtn);
+
+        if (event.status === "terminated") {
+          const shareBtn = document.createElement("button");
+          shareBtn.textContent = "Teilen";
+          shareBtn.onclick = () => {
+             const txt = `${event.name}\n\n` + event.entries.map(e => `${e.label}: ${e.count}`).join('\n');
+             navigator.share?.({ text: txt }) || alert(txt);
+          };
+          btnRow.appendChild(shareBtn);
+        }
+
+        container.appendChild(btnRow);
+        eventsDiv.appendChild(container);
+      });
+    }
+
+    render();
+  </script>
+</body>
+</html>
