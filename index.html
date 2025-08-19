@@ -4,10 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#000000" />
-  <!-- PWA & Icon -->
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="event-counter-icon.png" />
-  
   <title>Event Counter</title>
   <style>
     * { box-sizing: border-box; }
@@ -38,7 +34,7 @@
     button:hover {
       background: #1565c0;
     }
-    input[type="text"], input[type="number"] {
+input[type="text"], input[type="number"] {
       flex: 1;
       padding: 0.5rem;
       border: 1px solid #444;
@@ -94,54 +90,52 @@
         align-items: stretch;
       }
     }
-    .count-buttons button {
-      flex: 1 1 auto;
-      font-size: 1.25rem;
-      font-weight: bold;
-      background-color: #4caf50;
-      color: #fff;
-      border: none;
-      padding: 0.75rem 1.25rem;
-      border-radius: 0.5rem;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-      transition: background-color 0.2s ease, transform 0.1s ease;
-    }
-    .count-buttons button:hover {
-      background-color: #388e3c;
-      transform: scale(1.03);
-    }
-    .count-buttons button:active {
-      transform: scale(0.97);
-    }
-  </style>
+  .count-buttons button {
+  flex: 1 1 auto;
+  font-size: 1.25rem;
+  font-weight: bold;
+  background-image: linear-gradient(to right, #607d8b, #455a64);
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+.count-buttons button:hover {
+  background-color: #388e3c;
+  transform: scale(1.03);
+}
+.count-buttons button:active {
+  transform: scale(0.97);
+}
+
+</style>
 </head>
 <body>
   <h1>Event Counter</h1>
-  <div class="topbar">
-    <button onclick="createNewEvent()">+ Neues Event</button>
-  </div>
-  <div style="text-align:center; margin-bottom:1rem">
-    <button onclick="toggleHelp()">❓ Anleitung</button>
-  </div>
-  <div id="helpOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#000a; color:white; z-index:9999; overflow-y:auto; padding:2rem;">
-    <div style="background:#222; border-radius:1rem; padding:2rem; max-width:800px; margin:auto;">
-      <h2>Anleitung</h2>
-      <p>Mit dieser App kannst du beliebige Ereignisse zählen. So funktioniert es:</p>
-      <ul>
-        <li><strong>+ Neues Event</strong> – Erstelle ein neues Event mit zwei Zählfeldern (z. B. Mann/Frau).</li>
-        <li><strong>Starten</strong> – Aktiviert das Zählen.</li>
-        <li><strong>Zähl-Buttons</strong> – Klicke auf einen Button wie „Mann (3)“, um zu zählen.</li>
-        <li><strong>Stoppen / Weiterzählen / Terminieren</strong> – Steuere das Event.</li>
-        <li><strong>Exportieren 📤</strong> – Lade alle Events als JSON-Datei herunter.</li>
-        <li><strong>Importieren 📥</strong> – Importiere Events (bestehende Events werden nur auf Nachfrage überschrieben).</li>
-        <li><strong>Teilen</strong> – Zeigt eine Zusammenfassung an und öffnet ggf. die Teilen-Funktion deines Geräts.</li>
-      </ul>
-      <p><strong>Hinweis:</strong> Alle Daten bleiben im Browser gespeichert. Kein Internet oder Server notwendig.</p>
-      <div style="text-align:center; margin-top:2rem">
-        <button onclick="toggleHelp()">Schließen</button>
-      </div>
+<div style="text-align:center; margin-bottom:1rem">
+  <button onclick="toggleHelp()">❓ Anleitung</button>
+</div>
+<div id="helpOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#000a; color:white; z-index:9999; overflow-y:auto; padding:2rem;">
+  <div style="background:#222; border-radius:1rem; padding:2rem; max-width:800px; margin:auto;">
+    <h2>Anleitung</h2>
+    <p>Mit dieser App kannst du beliebige Ereignisse zählen. So funktioniert es:</p>
+    <ul>
+      <li><strong>+ Neues Event</strong> – Erstelle ein neues Event mit zwei Zählfeldern (z. B. Mann/Frau).</li>
+      <li><strong>Starten</strong> – Aktiviert das Zählen.</li>
+      <li><strong>Zähl-Buttons</strong> – Klicke auf einen Button wie „Mann (3)“, um zu zählen.</li>
+      <li><strong>Stoppen / Weiterzählen / Terminieren</strong> – Steuere das Event.</li>
+      <li><strong>Exportieren 📤</strong> – Lade alle Events als JSON-Datei herunter.</li>
+      <li><strong>Importieren 📥</strong> – Importiere Events (bestehende Events werden nur auf Nachfrage überschrieben).</li>
+      <li><strong>Teilen</strong> – Zeigt eine Zusammenfassung an und öffnet ggf. die Teilen-Funktion deines Geräts.</li>
+    </ul>
+    <p><strong>Hinweis:</strong> Alle Daten bleiben im Browser gespeichert. Kein Internet oder Server notwendig.</p>
+    <div style="text-align:center; margin-top:2rem">
+      <button onclick="toggleHelp()">Schließen</button>
     </div>
   </div>
+</div>
   <div id="events"></div>
   <div style="text-align:center; margin-top:2rem">
     <button onclick="exportEvents()">📤 Exportieren</button>
@@ -149,27 +143,22 @@
     <button onclick="document.getElementById('importFile').click()">📥 Importieren</button>
   </div>
 
-<script>
-let events = JSON.parse(localStorage.getItem("events") || "[]");
-const eventsDiv = document.getElementById("events");
+  <script>
+    let events = JSON.parse(localStorage.getItem("events") || "[]");
+    const eventsDiv = document.getElementById("events");
 
-function toggleHelp() {
-  const overlay = document.getElementById("helpOverlay");
-  overlay.style.display = overlay.style.display === "none" ? "block" : "none";
-}
-
-function save() {
+    function save() {
   localStorage.setItem("events", JSON.stringify(events));
   render();
 }
 
 function exportEvents() {
   const data = JSON.stringify(events, null, 2);
-  const blob = new Blob([data], { type: "application/json" });
+  const blob = new Blob([data], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  const a = document.createElement('a');
   a.href = url;
-  a.download = "events-export.json";
+  a.download = 'events-export.json';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -177,13 +166,18 @@ function exportEvents() {
 
 function handleImport(e) {
   const file = e.target.files[0];
-  if (!file) return;
+  if (!file || !file.name.endsWith('.json')) {
+    alert("Nur JSON-Dateien können importiert werden.");
+    return;
+  }
   const reader = new FileReader();
   reader.onload = () => {
     try {
-      const imported = JSON.parse(reader.result);
+      const sanitized = reader.result.replace(/<script.*?>.*?<\/script>/gi, "");
+      const imported = JSON.parse(sanitized);
       let changed = false;
       imported.forEach(newEvent => {
+        if (typeof newEvent !== 'object' || !newEvent.id || !newEvent.name) return;
         const idx = events.findIndex(ev => ev.id === newEvent.id);
         if (idx >= 0) {
           const overwrite = confirm(`Event '${newEvent.name}' existiert bereits. Überschreiben?`);
@@ -205,156 +199,160 @@ function handleImport(e) {
   reader.readAsText(file);
 }
 
+render();
+
 function createNewEvent() {
-  const name = prompt("Event-Name?") || "Neues Event";
-  events.push({
-    id: Date.now(),
-    name,
-    status: "new",
-    entries: [
-      { label: "Mann", count: 0 },
-      { label: "Frau", count: 0 }
-    ]
-  });
-  save();
-}
-
-function render() {
-  eventsDiv.innerHTML = "";
-  events.forEach((event, idx) => {
-    const container = document.createElement("div");
-    container.className = "event" + (event.status === "terminated" ? " terminated" : "");
-
-    const nameInput = document.createElement("input");
-    nameInput.value = event.name;
-    nameInput.disabled = event.status === "terminated";
-    nameInput.onchange = e => {
-      event.name = e.target.value;
+      const name = prompt("Event-Name?") || "Neues Event";
+      events.push({
+        id: Date.now(),
+        name,
+        status: "new",
+        entries: [
+          { label: "Mann", count: 0 },
+          { label: "Frau", count: 0 }
+        ]
+      });
       save();
-    };
-    container.appendChild(nameInput);
+    }
 
-    if (event.status === "new" || event.status === "running") {
-      event.entries.forEach((entry, i) => {
-        const row = document.createElement("div");
-        row.className = "entry-row";
-        const labelInput = document.createElement("input");
-        labelInput.value = entry.label;
-        labelInput.disabled = event.status === "running";
-        labelInput.onchange = e => {
-          event.entries[i].label = e.target.value;
+    function render() {
+      eventsDiv.innerHTML = "";
+      events.forEach((event, idx) => {
+        const container = document.createElement("div");
+        container.className = "event" + (event.status === "terminated" ? " terminated" : "");
+
+        const nameInput = document.createElement("input");
+        nameInput.value = event.name;
+        nameInput.disabled = event.status === "terminated";
+        nameInput.onchange = e => {
+          event.name = e.target.value;
           save();
         };
+        container.appendChild(nameInput);
+
+        if (event.status === "new" || event.status === "running") {
+          event.entries.forEach((entry, i) => {
+            const row = document.createElement("div");
+            row.className = "entry-row";
+            const labelInput = document.createElement("input");
+            labelInput.value = entry.label;
+            labelInput.disabled = event.status === "running";
+            labelInput.onchange = e => {
+              event.entries[i].label = e.target.value;
+              save();
+            };
+            const delBtn = document.createElement("button");
+            delBtn.textContent = "Löschen";
+            delBtn.disabled = event.status === "running";
+            delBtn.onclick = () => {
+              event.entries.splice(i, 1);
+              save();
+            };
+            row.append(labelInput, delBtn);
+            container.appendChild(row);
+          });
+          const addBtn = document.createElement("button");
+          addBtn.textContent = "+ Eintrag";
+          addBtn.disabled = event.status === "running";
+          addBtn.onclick = () => {
+            event.entries.push({ label: "Neuer Eintrag", count: 0 });
+            save();
+          };
+          container.appendChild(addBtn);
+        } else if (event.status === "terminated") {
+          const table = document.createElement("table");
+          event.entries.forEach(entry => {
+            const row = document.createElement("tr");
+            row.innerHTML = `<td>${entry.label}</td><td>${entry.count}</td>`;
+            table.appendChild(row);
+          });
+          container.appendChild(table);
+        }
+
+        if (event.status === "running") {
+          const buttonRow = document.createElement("div");
+          buttonRow.className = "buttons count-buttons";
+          event.entries.forEach((entry, i) => {
+            const btn = document.createElement("button");
+            btn.textContent = `${entry.label} (${entry.count})`;
+            btn.onclick = () => {
+              event.entries[i].count++;
+              save();
+            };
+            buttonRow.appendChild(btn);
+          });
+          container.appendChild(buttonRow);
+        }
+
+        const btnRow = document.createElement("div");
+        btnRow.className = "buttons";
+
+        if (event.status === "new") {
+          const startBtn = document.createElement("button");
+          startBtn.textContent = "Starten";
+          startBtn.onclick = () => {
+            event.status = "running";
+            save();
+          };
+          btnRow.appendChild(startBtn);
+        } else if (event.status === "running") {
+          const stopBtn = document.createElement("button");
+          stopBtn.textContent = "Stoppen";
+          stopBtn.onclick = () => {
+            event.status = "stopped";
+            save();
+          };
+          btnRow.appendChild(stopBtn);
+        } else if (event.status === "stopped") {
+          const resumeBtn = document.createElement("button");
+          resumeBtn.textContent = "Weiterzählen";
+          resumeBtn.onclick = () => {
+            event.status = "running";
+            save();
+          };
+          btnRow.appendChild(resumeBtn);
+        }
+
+        if (event.status !== "terminated") {
+          const terminateBtn = document.createElement("button");
+          terminateBtn.textContent = "Terminieren";
+          terminateBtn.onclick = () => {
+            event.status = "terminated";
+            save();
+          };
+          btnRow.appendChild(terminateBtn);
+        }
+
         const delBtn = document.createElement("button");
         delBtn.textContent = "Löschen";
-        delBtn.disabled = event.status === "running";
         delBtn.onclick = () => {
-          event.entries.splice(i, 1);
-          save();
+          if (confirm("Wirklich löschen?")) {
+            events.splice(idx, 1);
+            save();
+          }
         };
-        row.append(labelInput, delBtn);
-        container.appendChild(row);
+        btnRow.appendChild(delBtn);
+
+        if (event.status === "terminated") {
+          const shareBtn = document.createElement("button");
+          shareBtn.textContent = "Teilen";
+          shareBtn.onclick = () => {
+             const txt = `${event.name}\n\n` + event.entries.map(e => `${e.label}: ${e.count}`).join('\n');
+             navigator.share?.({ text: txt }) || alert(txt);
+          };
+          btnRow.appendChild(shareBtn);
+        }
+
+        container.appendChild(btnRow);
+        eventsDiv.appendChild(container);
       });
-      const addBtn = document.createElement("button");
-      addBtn.textContent = "+ Eintrag";
-      addBtn.disabled = event.status === "running";
-      addBtn.onclick = () => {
-        event.entries.push({ label: "Neuer Eintrag", count: 0 });
-        save();
-      };
-      container.appendChild(addBtn);
-    } else if (event.status === "terminated") {
-      const table = document.createElement("table");
-      event.entries.forEach(entry => {
-        const row = document.createElement("tr");
-        row.innerHTML = `<td>${entry.label}</td><td>${entry.count}</td>`;
-        table.appendChild(row);
-      });
-      container.appendChild(table);
     }
 
-    if (event.status === "running") {
-      const buttonRow = document.createElement("div");
-      buttonRow.className = "buttons count-buttons";
-      event.entries.forEach((entry, i) => {
-        const btn = document.createElement("button");
-        btn.textContent = `${entry.label} (${entry.count})`;
-        btn.onclick = () => {
-          event.entries[i].count++;
-          save();
-        };
-        buttonRow.appendChild(btn);
-      });
-      container.appendChild(buttonRow);
-    }
-
-    const btnRow = document.createElement("div");
-    btnRow.className = "buttons";
-
-    if (event.status === "new") {
-      const startBtn = document.createElement("button");
-      startBtn.textContent = "Starten";
-      startBtn.onclick = () => {
-        event.status = "running";
-        save();
-      };
-      btnRow.appendChild(startBtn);
-    } else if (event.status === "running") {
-      const stopBtn = document.createElement("button");
-      stopBtn.textContent = "Stoppen";
-      stopBtn.onclick = () => {
-        event.status = "stopped";
-        save();
-      };
-      btnRow.appendChild(stopBtn);
-    } else if (event.status === "stopped") {
-      const resumeBtn = document.createElement("button");
-      resumeBtn.textContent = "Weiterzählen";
-      resumeBtn.onclick = () => {
-        event.status = "running";
-        save();
-      };
-      btnRow.appendChild(resumeBtn);
-    }
-
-    if (event.status !== "terminated") {
-      const terminateBtn = document.createElement("button");
-      terminateBtn.textContent = "Terminieren";
-      terminateBtn.onclick = () => {
-        event.status = "terminated";
-        save();
-      };
-      btnRow.appendChild(terminateBtn);
-    }
-
-    const delBtn = document.createElement("button");
-    delBtn.textContent = "Löschen";
-    delBtn.onclick = () => {
-      if (confirm("Wirklich löschen?")) {
-        events.splice(idx, 1);
-        save();
-      }
-    };
-    btnRow.appendChild(delBtn);
-
-    if (event.status === "terminated") {
-      const shareBtn = document.createElement("button");
-      shareBtn.textContent = "Teilen";
-      shareBtn.onclick = () => {
-        const txt = `${event.name}
-
-` + event.entries.map(e => `${e.label}: ${e.count}`).join('\n');
-        navigator.share?.({ text: txt }) || alert(txt);
-      };
-      btnRow.appendChild(shareBtn);
-    }
-
-    container.appendChild(btnRow);
-    eventsDiv.appendChild(container);
-  });
+    render();
+  function toggleHelp() {
+  const overlay = document.getElementById('helpOverlay');
+  overlay.style.display = overlay.style.display === 'none' ? 'block' : 'none';
 }
-
-render();
 </script>
 </body>
 </html>
