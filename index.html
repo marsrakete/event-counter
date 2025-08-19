@@ -170,14 +170,28 @@ function handleImport(e) {
     alert("Nur JSON-Dateien können importiert werden.");
     return;
   }
+
   const reader = new FileReader();
   reader.onload = () => {
     try {
-      const sanitized = reader.result.replace(/<script.*?>.*?<\/script>/gi, "");
+      // Entferne bösartige Inhalte
+      const sanitized = reader.result
+        .replace(/<script.*?>.*?<\\/script>/gi, "")
+        .replace(/onerror\s*=\s*['\"].*?['\"]/gi, "")
+        .replace(/javascript:/gi, "");
+
       const imported = JSON.parse(sanitized);
       let changed = false;
+
       imported.forEach(newEvent => {
         if (typeof newEvent !== 'object' || !newEvent.id || !newEvent.name) return;
+
+        // Zusätzliche Sicherheitsprüfung
+        newEvent.name = newEvent.name.replace(/[<>]/g, '');
+        newEvent.entries = (newEvent.entries || []).filter(e =>
+          typeof e.label === 'string' && typeof e.count === 'number'
+        );
+
         const idx = events.findIndex(ev => ev.id === newEvent.id);
         if (idx >= 0) {
           const overwrite = confirm(`Event '${newEvent.name}' existiert bereits. Überschreiben?`);
@@ -190,14 +204,17 @@ function handleImport(e) {
           changed = true;
         }
       });
+
       if (changed) save();
       else alert("Keine Änderungen importiert.");
     } catch (err) {
       alert("Fehler beim Import: " + err.message);
     }
   };
+
   reader.readAsText(file);
 }
+
 
 render();
 
