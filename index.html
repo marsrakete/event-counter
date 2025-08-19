@@ -178,10 +178,10 @@ function handleImport(e) {
   reader.onload = () => {
     try {
       // Entferne bösartige Inhalte
-      const sanitized = reader.result
-        .replace(/<script.*?>.*?<\\/script>/gi, "")
-        .replace(/onerror\s*=\s*['\"].*?['\"]/gi, "")
-        .replace(/javascript:/gi, "");
+    const sanitized = reader.result
+      .replace(/<script.*?>.*?<\/script>/gi, "")
+      .replace(/onerror\s*=\s*['\"].*?['\"]/gi, "")
+      .replace(/javascript:/gi, "");
 
       const imported = JSON.parse(sanitized);
       let changed = false;
