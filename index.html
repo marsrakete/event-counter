@@ -2,113 +2,83 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Event Counter</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="512x512" href="event-counter-icon.png">
-  <title>Event Counter</title>
   <style>
-    body{background:#0f1115;color:#eef2f6;font-family:sans-serif;padding:1rem}
-    h1{text-align:center}
-    .event{background:#171a21;padding:1rem;margin:1rem auto;border-radius:1rem;max-width:900px}
-    .count-buttons button[disabled]{background:#2a2f3a;color:#cfd8dc;cursor:not-allowed}
-    button{margin:.2rem;padding:.5rem .8rem;border-radius:.5rem;cursor:pointer}
-    .btn-primary{background:#4f8cc9;color:#fff;border:none}
-    .btn-warning{background:#fbc02d;color:#111;border:none}
-    .btn-danger{background:#ef5350;color:#fff;border:none}
-    .btn-accent{background:#00bcd4;color:#fff;border:none}
-    .btn-ghost{background:transparent;border:1px solid #444;color:#9aa4ad}
-    #trash{background:#171a21;border-radius:1rem;padding:1rem;margin-top:1rem;display:none}
-    #trash h2{margin-top:0}
-    .trash-item{border:1px dashed #444;padding:.5rem;margin:.3rem 0;border-radius:.5rem}
-  
-    .header-row{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-bottom:.5rem}
-    .status-badge{display:inline-flex;align-items:center;gap:.4rem;padding:.25rem .55rem;border-radius:999px;font-size:.85rem;font-weight:600}
-    .status-running{background:rgba(46,125,50,.15);color:#66bb6a;border:1px solid rgba(46,125,50,.35)}
-    .status-stopped{background:rgba(251,192,45,.15);color:#ffca28;border:1px solid rgba(251,192,45,.35)}
-    .status-terminated{background:rgba(84,110,122,.15);color:#90a4ae;border:1px solid rgba(84,110,122,.35)}
-        </style>
+    body {font-family: 'Segoe UI', sans-serif; background: #121212; color: #fff; padding: 1rem; margin: 0;}
+    h1 {text-align: center; font-size: 2rem; margin-bottom: 1rem;}
+    button, input {font-size: 1rem; padding: 0.5rem 1rem; border-radius: 0.5rem; border: none; margin: 0.25rem; cursor:pointer}
+    button {background: #1e88e5; color: #fff;}
+    button:hover {background: #1565c0;}
+    input[type="text"] {flex: 1; padding: 0.5rem; border: 1px solid #444; border-radius: 0.5rem; background: #222; color: #fff;}
+    input:disabled {color: #ccc;}
+    .event {border: 1px solid #444; border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.5rem; background: #1c1c1c;}
+    .event.terminated {background: #333; color: #ccc;}
+    .buttons, .entry-row {display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;}
+    .entry-row {align-items: center;}
+    .count-buttons button {flex: 1 1 auto; font-size: 1.25rem; font-weight: bold; background:#607d8b; color:#fff;}
+    .count-buttons button[disabled]{background:#2a2f3a; color:#cfd8dc;}
+    @media (max-width: 600px){button, input{width:100%;}}
+    .topbar {text-align:center; margin-bottom:1rem}
+    #trash {display:none; background:#1c1c1c; border:1px solid #444; border-radius:.75rem; padding:1rem; margin-top:1rem}
+    .trash-item{border:1px dashed #666; padding:.5rem; margin:.3rem 0; border-radius:.5rem}
+    #helpOverlay{display:none; position:fixed; inset:0; background:#000a; color:#fff; z-index:1000; overflow:auto; padding:2rem}
+    #helpOverlay .box{background:#222; padding:2rem; border-radius:1rem; max-width:800px; margin:auto}
+  </style>
 </head>
 <body>
-<h1>Event Counter</h1>
-<div class="topbar">
-  <button class="btn-primary" onclick="createNewEvent()">+ Neues Event</button>
-  <button class="btn-ghost" onclick="toggleTrash()">🗑️ Papierkorb <span id="trash-count">0</span></button>
-</div>
-<div id="events"></div>
-<div id="trash">
-  <h2>Papierkorb</h2>
-  <div id="trash-events"></div>
-  <div id="trash-entries"></div>
-  <button class="btn-danger" onclick="emptyTrash()">Papierkorb leeren</button>
-</div>
-<script>
-let events = JSON.parse(localStorage.getItem("events")||"[]");
-let trash = {events:[],entries:[]};
-const eventsDiv=document.getElementById("events");
+  <h1>Event Counter</h1>
+  <div class="topbar">
+    <button onclick="createNewEvent()">+ Neues Event</button>
+    <button onclick="exportEvents()">📤 Exportieren</button>
+    <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="handleImport(event)">
+    <button onclick="document.getElementById('importFile').click()">📥 Importieren</button>
+    <button onclick="toggleHelp()">❓ Anleitung</button>
+    <button onclick="toggleTrash()">🗑️ Papierkorb <span id="trash-count">0</span></button>
+  </div>
+  <div id="helpOverlay"><div class="box">
+    <h2>Anleitung</h2>
+    <ul>
+      <li>Events anlegen, bearbeiten, starten, stoppen, fortsetzen, terminieren</li>
+      <li>+ Eintrag fügt neue Zähler hinzu</li>
+      <li>Nur laufende Events können gezählt werden</li>
+      <li>Terminierte Events sind schreibgeschützt, können geteilt oder kopiert werden</li>
+      <li>Papierkorb enthält gelöschte Events/Einträge zum Wiederherstellen oder endgültigen Löschen</li>
+      <li>Export/Import mit JSON und Sicherheitsprüfung</li>
+    </ul>
+    <button onclick="toggleHelp()">Schließen</button>
+  </div></div>
+  <div id="events"></div>
+  <div id="trash"><h2>Papierkorb</h2><div id="trash-events"></div><div id="trash-entries"></div><button onclick="emptyTrash()">Papierkorb leeren</button></div>
+  <script>
+    let events = JSON.parse(localStorage.getItem('events')||'[]');
+    let trash = {events:[],entries:[]};
+    const eventsDiv=document.getElementById('events');
 
-function save(){localStorage.setItem("events",JSON.stringify(events));render();}
-function createNewEvent(){
-  const name=prompt("Event-Name?")||"Neues Event";
-  events.push({id:crypto.randomUUID(),name,status:"new",
-    entries:[{id:crypto.randomUUID(),label:"Mann",count:0},{id:crypto.randomUUID(),label:"Frau",count:0}]});
-  save();
-}
-function shareEvent(ev){
-  const txt=`${ev.name}\n\n`+ev.entries.map(e=>`${e.label}: ${e.count}`).join('\n');
-  if(navigator.share){navigator.share({title:"Ergebnis der Zählung",text:txt})
-    .catch(()=>window.location.href=`mailto:?subject=Ergebnis der Zählung&body=${encodeURIComponent(txt)}`);}
-  else window.location.href=`mailto:?subject=Ergebnis der Zählung&body=${encodeURIComponent(txt)}`;
-}
-function render(){
-  eventsDiv.innerHTML="";
-  events.forEach((event,idx)=>{
-    const card=document.createElement("div");card.className="event";
-    const header=document.createElement("div");header.className="header-row";
-    const nameInput=document.createElement("input");nameInput.value=event.name;nameInput.disabled=event.status==="terminated";
-    nameInput.onchange=e=>{event.name=e.target.value;save();};header.appendChild(nameInput);
-    const badge=document.createElement("span");badge.className="status-badge status-"+(event.status||"new");
-    badge.textContent = (event.status==="running"?"Läuft":(event.status==="stopped"?"Pausiert":(event.status==="terminated"?"Terminiert":"Neu")));
-    header.appendChild(badge);
-    card.appendChild(header);
-    // controls
-    if(event.status==="new"){let b=document.createElement("button");b.className="btn-primary";b.textContent="Starten";b.onclick=()=>{event.status="running";save();};card.appendChild(b);}
-    else if(event.status==="running"){let b=document.createElement("button");b.className="btn-warning";b.textContent="Stoppen";b.onclick=()=>{event.status="stopped";save();};card.appendChild(b);}
-    else if(event.status==="stopped"){let b=document.createElement("button");b.className="btn-primary";b.textContent="Fortsetzen";b.onclick=()=>{event.status="running";save();};card.appendChild(b);}
-    if(event.status!=="terminated"){let b=document.createElement("button");b.className="btn-danger";b.textContent="Terminieren";b.onclick=()=>{if(confirm("Terminieren?")){event.status="terminated";save();}};card.appendChild(b);}
-    if(event.status==="terminated"){let b=document.createElement("button");b.className="btn-accent";b.textContent="Teilen";b.onclick=()=>shareEvent(event);card.appendChild(b);}
-    let del=document.createElement("button");del.className="btn-ghost";del.textContent="Event löschen";
-    del.onclick=()=>{if(confirm("Event in Papierkorb verschieben?")){trash.events.push({...event});events.splice(idx,1);save();renderTrash();updateTrashCount();}};card.appendChild(del);
-    // entries
-    event.entries.forEach(entry=>{
-      const row=document.createElement("div");row.className="entry-row";
-      const inp=document.createElement("input");inp.value=entry.label;inp.disabled=event.status==="terminated";
-      inp.onchange=e=>{entry.label=e.target.value;save();};row.appendChild(inp);
-      if(event.status!=="terminated"){let d=document.createElement("button");d.className="btn-ghost";d.textContent="Löschen";
-        d.onclick=()=>{if(confirm("Eintrag löschen?")){trash.entries.push({...entry,parentId:event.id,parentName:event.name});event.entries=event.entries.filter(en=>en.id!==entry.id);save();renderTrash();updateTrashCount();}};row.appendChild(d);}
-      card.appendChild(row);
-    });
-    if(event.status!=="terminated"){let add=document.createElement("button");add.className="btn-primary";add.textContent="+ Eintrag";add.onclick=()=>{event.entries.push({id:crypto.randomUUID(),label:"Neuer Eintrag",count:0});save();};card.appendChild(add);}
-    // count
-    const cdiv=document.createElement("div");cdiv.className="count-buttons";
-    event.entries.forEach((entry,i)=>{let b=document.createElement("button");b.textContent=`${entry.label} (${entry.count})`;if(event.status==="running"){b.onclick=()=>{event.entries[i].count++;save();};}else b.disabled=true;cdiv.appendChild(b);});card.appendChild(cdiv);
-    eventsDiv.appendChild(card);
-  });
-}
-function toggleTrash(){let t=document.getElementById("trash");t.style.display=t.style.display==="none"?"block":"none";if(t.style.display==="block")renderTrash();}
-function renderTrash(){
-  const evDiv=document.getElementById("trash-events");const enDiv=document.getElementById("trash-entries");
-  evDiv.innerHTML="<h3>Events</h3>";trash.events.forEach((e,i)=>{let wrap=document.createElement("div");wrap.className="trash-item";wrap.innerHTML=`<strong>${e.name}</strong>`;
-    let restore=document.createElement("button");restore.textContent="Wiederherstellen";restore.onclick=()=>{events.push(e);trash.events.splice(i,1);save();renderTrash();updateTrashCount();};
-    let purge=document.createElement("button");purge.textContent="Endgültig löschen";purge.onclick=()=>{trash.events.splice(i,1);renderTrash();updateTrashCount();};
-    wrap.append(restore,purge);evDiv.appendChild(wrap);});
-  enDiv.innerHTML="<h3>Einträge</h3>";trash.entries.forEach((en,i)=>{let wrap=document.createElement("div");wrap.className="trash-item";wrap.innerHTML=`<strong>${en.label}</strong> <small>(Event: ${en.parentName||en.parentId})</small>`;
-    let restore=document.createElement("button");restore.textContent="Wiederherstellen";restore.onclick=()=>{let parent=events.find(ev=>ev.id===en.parentId);if(parent){parent.entries.push(en);trash.entries.splice(i,1);save();renderTrash();updateTrashCount();}else alert("Event nicht mehr vorhanden");};
-    let purge=document.createElement("button");purge.textContent="Endgültig löschen";purge.onclick=()=>{trash.entries.splice(i,1);renderTrash();updateTrashCount();};
-    wrap.append(restore,purge);enDiv.appendChild(wrap);});
-}
-function updateTrashCount(){document.getElementById("trash-count").textContent=trash.events.length+trash.entries.length;}
-function emptyTrash(){if(confirm("Papierkorb endgültig leeren?")){trash.events=[];trash.entries=[];renderTrash();updateTrashCount();}}
-render();
-</script>
+    function toggleHelp(){const o=document.getElementById('helpOverlay');o.style.display=(o.style.display==='none'||!o.style.display)?'block':'none';}
+    function toggleTrash(){const t=document.getElementById('trash');t.style.display=t.style.display==='none'?'block':'none';if(t.style.display==='block')renderTrash();}
+    function updateTrashCount(){document.getElementById('trash-count').textContent=trash.events.length+trash.entries.length;}
+    function emptyTrash(){if(confirm('Papierkorb endgültig leeren?')){trash.events=[];trash.entries=[];renderTrash();updateTrashCount();}}
+
+    function save(){localStorage.setItem('events',JSON.stringify(events));render();}
+
+    function exportEvents(){const data=JSON.stringify(events,null,2);const blob=new Blob([data],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='events-export.json';a.click();URL.revokeObjectURL(url);}
+
+    function handleImport(e){const file=e.target.files[0];if(!file||!/\.json$/i.test(file.name)){alert('Nur JSON-Dateien importieren');return;}const reader=new FileReader();reader.onload=()=>{try{const sanitized=String(reader.result).replace(/<script[\s\S]*?<\/script>/gi,'').replace(/on\w+\s*=\s*(['"]).*?\1/gi,'').replace(/javascript:/gi,'');const imported=JSON.parse(sanitized);if(!Array.isArray(imported))throw new Error('Erwarte Array');let changed=false;imported.forEach(ne=>{if(!ne||typeof ne!=='object')return;if(!ne.id)ne.id=crypto.randomUUID();ne.status=['new','running','stopped','terminated'].includes(ne.status)?ne.status:'new';ne.entries=(Array.isArray(ne.entries)?ne.entries:[]).map(en=>({id:en.id||crypto.randomUUID(),label:String(en.label||'Eintrag'),count:Number(en.count||0)}));const i=events.findIndex(ev=>ev.id===ne.id);if(i>=0){if(confirm(`Event '${ne.name}' existiert. Überschreiben?`)){events[i]=ne;changed=true;}}else{events.push(ne);changed=true;}});if(changed)save();else alert('Keine Änderungen importiert');}catch(err){alert('Fehler: '+err.message);}};reader.readAsText(file);}
+
+    function createNewEvent(){const name=prompt('Event-Name?')||'Neues Event';events.push({id:crypto.randomUUID(),name,status:'new',entries:[{id:crypto.randomUUID(),label:'Mann',count:0},{id:crypto.randomUUID(),label:'Frau',count:0}]});save();}
+
+    function copyTerminatedAsNew(event){const clone={id:crypto.randomUUID(),name:(event.name||'Event')+' (Kopie)',status:'new',entries:(event.entries||[]).map(en=>({id:crypto.randomUUID(),label:en.label,count:0}))};events.push(clone);save();}
+
+    function shareEvent(ev){const txt=`${ev.name}\n\n`+ev.entries.map(e=>`${e.label}: ${e.count}`).join('\n');if(navigator.share){navigator.share({title:'Ergebnis der Zählung',text:txt}).catch(()=>window.location.href=`mailto:?subject=Ergebnis der Zählung&body=${encodeURIComponent(txt)}`);}else{window.location.href=`mailto:?subject=Ergebnis der Zählung&body=${encodeURIComponent(txt)}`;}}
+
+    function render(){eventsDiv.innerHTML='';events.forEach((event,idx)=>{const card=document.createElement('div');card.className='event'+(event.status==='terminated'?' terminated':'');const nameInput=document.createElement('input');nameInput.value=event.name;nameInput.disabled=event.status==='terminated';nameInput.onchange=e=>{event.name=e.target.value;save();};card.appendChild(nameInput);const controls=document.createElement('div');controls.className='buttons';if(event.status==='new'){let b=document.createElement('button');b.textContent='Starten';b.onclick=()=>{event.status='running';save();};controls.appendChild(b);}else if(event.status==='running'){let b=document.createElement('button');b.textContent='Stoppen';b.onclick=()=>{event.status='stopped';save();};controls.appendChild(b);}else if(event.status==='stopped'){let b=document.createElement('button');b.textContent='Fortsetzen';b.onclick=()=>{event.status='running';save();};controls.appendChild(b);}if(event.status!=='terminated'){let b=document.createElement('button');b.textContent='Terminieren';b.onclick=()=>{if(confirm('Terminieren?')){event.status='terminated';save();}};controls.appendChild(b);}else{let s=document.createElement('button');s.textContent='Teilen';s.onclick=()=>shareEvent(event);controls.appendChild(s);let c=document.createElement('button');c.textContent='Als neues Event kopieren';c.onclick=()=>copyTerminatedAsNew(event);controls.appendChild(c);}let d=document.createElement('button');d.textContent='Löschen';d.onclick=()=>{if(confirm('Event in Papierkorb verschieben?')){trash.events.push({...event});events.splice(idx,1);save();renderTrash();updateTrashCount();}};controls.appendChild(d);card.appendChild(controls);event.entries.forEach(entry=>{const row=document.createElement('div');row.className='entry-row';const inp=document.createElement('input');inp.value=entry.label;inp.disabled=event.status==='terminated';inp.onchange=e=>{entry.label=e.target.value;save();};row.appendChild(inp);if(event.status!=='terminated'){let del=document.createElement('button');del.textContent='Löschen';del.onclick=()=>{if(confirm('Eintrag löschen?')){trash.entries.push({...entry,parentId:event.id,parentName:event.name});event.entries=event.entries.filter(en=>en.id!==entry.id);save();renderTrash();updateTrashCount();}};row.appendChild(del);}card.appendChild(row);});if(event.status!=='terminated'){let add=document.createElement('button');add.textContent='+ Eintrag';add.onclick=()=>{event.entries.push({id:crypto.randomUUID(),label:'Neuer Eintrag',count:0});save();};card.appendChild(add);}const cdiv=document.createElement('div');cdiv.className='count-buttons';event.entries.forEach((entry,i)=>{const btn=document.createElement('button');btn.textContent=`${entry.label} (${entry.count})`;if(event.status==='running'){btn.onclick=()=>{event.entries[i].count++;save();};}else btn.disabled=true;cdiv.appendChild(btn);});card.appendChild(cdiv);eventsDiv.appendChild(card);});}
+
+    function renderTrash(){const evDiv=document.getElementById('trash-events');const enDiv=document.getElementById('trash-entries');evDiv.innerHTML='<h3>Events</h3>';trash.events.forEach((e,i)=>{const wrap=document.createElement('div');wrap.className='trash-item';wrap.innerHTML=`<strong>${e.name}</strong>`;let r=document.createElement('button');r.textContent='Wiederherstellen';r.onclick=()=>{events.push(e);trash.events.splice(i,1);save();renderTrash();updateTrashCount();};let p=document.createElement('button');p.textContent='Endgültig löschen';p.onclick=()=>{trash.events.splice(i,1);renderTrash();updateTrashCount();};wrap.append(r,p);evDiv.appendChild(wrap);});enDiv.innerHTML='<h3>Einträge</h3>';trash.entries.forEach((en,i)=>{const wrap=document.createElement('div');wrap.className='trash-item';wrap.innerHTML=`<strong>${en.label}</strong> <small>(Event: ${en.parentName||en.parentId})</small>`;let r=document.createElement('button');r.textContent='Wiederherstellen';r.onclick=()=>{const parent=events.find(ev=>ev.id===en.parentId);if(parent){parent.entries.push(en);trash.entries.splice(i,1);save();renderTrash();updateTrashCount();}else alert('Event nicht mehr vorhanden');};let p=document.createElement('button');p.textContent='Endgültig löschen';p.onclick=()=>{trash.entries.splice(i,1);renderTrash();updateTrashCount();};wrap.append(r,p);enDiv.appendChild(wrap);});}
+
+    render();
+  </script>
 </body>
 </html>
