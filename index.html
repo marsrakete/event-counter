@@ -2,380 +2,385 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#000000" />
-
-  <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="event-counter-icon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Event Counter</title>
   <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #121212;
-      color: #fff;
-      padding: 1rem;
-      margin: 0;
+    :root{
+      --bg:#0f1115; --card:#171a21; --muted:#9aa4ad; --text:#eef2f6;
+      --primary:#4f8cc9; --primary-2:#2a5c8f; --accent:#607d8b; --accent-2:#455a64;
+      --warn:#d32f2f; --ok:#2e7d32; --border:#222935;
     }
-    h1 {
-      text-align: center;
-      font-size: 2rem;
-      margin-bottom: 1rem;
-    }
-    button, input {
-      font-size: 1rem;
-      padding: 0.5rem 1rem;
-      border-radius: 0.5rem;
-      border: none;
-      margin: 0.25rem 0;
-    }
-    button {
-      background: #1e88e5;
-      color: #fff;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #1565c0;
-    }
-input[type="text"], input[type="number"] {
-      flex: 1;
-      padding: 0.5rem;
-      border: 1px solid #444;
-      border-radius: 0.5rem;
-      background: #222;
-      color: #fff;
-    }
-    input:disabled {
-      color: #ccc;
-      opacity: 1;
-    }
-    .event {
-      border: 1px solid #444;
-      border-radius: 0.75rem;
-      padding: 1rem;
-      margin-bottom: 1.5rem;
-      background: #1c1c1c;
-    }
-    .event.terminated {
-      background: #333;
-      color: #ccc;
-    }
-    .buttons, .entry-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-top: 0.5rem;
-    }
-    .entry-row {
-      align-items: center;
-    }
-    table {
-      width: 100%;
-      margin-top: 1rem;
-      border-collapse: collapse;
-    }
-    td {
-      padding: 0.5rem;
-      border-bottom: 1px solid #333;
-    }
-    .topbar {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 1rem;
-    }
-    @media (max-width: 600px) {
-      button, input {
-        font-size: 1rem;
-        width: 100%;
-      }
-      .entry-row {
-        flex-direction: column;
-        align-items: stretch;
-      }
-    }
-  .count-buttons button {
-  flex: 1 1 auto;
-  font-size: 1.25rem;
-  font-weight: bold;
-  background-image: linear-gradient(to right, #607d8b, #455a64);
-  color: #fff;
-  border: none;
-  padding: 0.75rem 1.25rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  transition: background-color 0.2s ease, transform 0.1s ease;
-}
-.count-buttons button:hover {
-  background-color: #388e3c;
-  transform: scale(1.03);
-}
-.count-buttons button:active {
-  transform: scale(0.97);
-}
-
-</style>
+    *{box-sizing:border-box}
+    body{ margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Arial;
+          background:linear-gradient(180deg,#0d1014,#0f1115 30%); color:var(--text); padding:1rem; }
+    h1{ text-align:center; margin:0 0 1rem; font-weight:700; letter-spacing:.2px; }
+    .topbar{ display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center; margin-bottom:1rem; }
+    button{ appearance:none; border:1px solid var(--border);
+            background:linear-gradient(180deg,#1c222c,#161b23); color:var(--text);
+            padding:.6rem .9rem; border-radius:.65rem; cursor:pointer;
+            transition:transform .08s ease, filter .15s ease, background .2s ease;
+            box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 8px 20px rgba(0,0,0,.25); }
+    button:hover{ filter:brightness(1.1) } button:active{ transform:translateY(1px) scale(.99) }
+    .btn-primary{ background: linear-gradient(180deg,var(--primary),var(--primary-2)); border-color:transparent; }
+    .btn-danger{ background: linear-gradient(180deg,#ef5350,#d32f2f); border-color:transparent; }
+    .btn-ghost{ background: transparent; border-color: var(--border); color: var(--muted); }
+    input[type="text"]{ width:100%; padding:.6rem .7rem; background:#0f141a; color:var(--text);
+                        border:1px solid var(--border); border-radius:.6rem; outline:none; }
+    .event{ background:var(--card); border:1px solid var(--border); border-radius:1rem;
+            padding:1rem; margin:0 auto 1rem; max-width:920px; box-shadow:0 10px 25px rgba(0,0,0,.25); }
+    .event-header{ display:flex; gap:.5rem; flex-wrap:wrap; align-items:center; }
+    .entry-row{ display:grid; grid-template-columns: 1fr auto; gap:.5rem; align-items:center; margin-top:.5rem; }
+    .section{ margin-top:.75rem; border-top:1px dashed var(--border); padding-top:.75rem; }
+    .count-buttons{ display:flex; flex-wrap:wrap; gap:.5rem; }
+    .count-buttons button{ flex:1 1 180px; background: linear-gradient(180deg,var(--accent),var(--accent-2));
+                           border-color: transparent; font-weight:700; letter-spacing:.2px; }
+    .badge{ display:inline-block; min-width:1.25rem; padding:.05rem .4rem; border-radius:999px;
+            background:#c62828; color:#fff; font-size:.8rem; text-align:center; margin-left:.4rem; }
+    .trash{ display:none; margin:1rem auto 0; max-width:920px; background:var(--card);
+            border:1px solid var(--border); border-radius:1rem; padding:1rem; }
+    .trash h2{ margin:0 0 .5rem } .trash-list > div{ border:1px dashed var(--border);
+            border-radius:.6rem; padding:.6rem; margin:.4rem 0; }
+    small.muted{ color:var(--muted) }
+  </style>
 </head>
 <body>
   <h1>Event Counter</h1>
-<div style="text-align:center; margin-bottom:1rem">
-  <button onclick="toggleHelp()">❓ Anleitung</button>
-</div>
-<div id="helpOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#000a; color:white; z-index:9999; overflow-y:auto; padding:2rem;">
-  <div style="background:#222; border-radius:1rem; padding:2rem; max-width:800px; margin:auto;">
-    <h2>Anleitung</h2>
-    <p>Mit dieser App kannst du beliebige Ereignisse zählen. So funktioniert es:</p>
-    <ul>
-      <li><strong>+ Neues Event</strong> – Erstelle ein neues Event mit zwei Zählfeldern (z. B. Mann/Frau).</li>
-      <li><strong>Starten</strong> – Aktiviert das Zählen.</li>
-      <li><strong>Zähl-Buttons</strong> – Klicke auf einen Button wie „Mann (3)“, um zu zählen.</li>
-      <li><strong>Stoppen / Weiterzählen / Terminieren</strong> – Steuere das Event.</li>
-      <li><strong>Exportieren 📤</strong> – Lade alle Events als JSON-Datei herunter.</li>
-      <li><strong>Importieren 📥</strong> – Importiere Events (bestehende Events werden nur auf Nachfrage überschrieben).</li>
-      <li><strong>Teilen</strong> – Zeigt eine Zusammenfassung an und öffnet ggf. die Teilen-Funktion deines Geräts.</li>
-    </ul>
-    <p><strong>Hinweis:</strong> Alle Daten bleiben im Browser gespeichert. Kein Internet oder Server notwendig.</p>
-    <div style="text-align:center; margin-top:2rem">
-      <button onclick="toggleHelp()">Schließen</button>
+
+  <div class="topbar">
+    <button class="btn-primary" onclick="createNewEvent()">+ Neues Event</button>
+    <button class="btn" onclick="toggleTrash()">🗑️ Papierkorb <span id="trash-count" class="badge">0</span></button>
+    <button class="btn" onclick="exportEvents()">📤 Exportieren</button>
+    <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="handleImport(event)">
+    <button class="btn" onclick="document.getElementById('importFile').click()">📥 Importieren</button>
+    <button class="btn-ghost" onclick="toggleHelp()">❓ Anleitung</button>
+  </div>
+
+  <div id="helpOverlay" style="display:none; position:fixed; inset:0; background:#000a; color:white; z-index:50; overflow-y:auto; padding:2rem;">
+    <div style="background:#1a212b; border:1px solid #2a3443; border-radius:1rem; padding:2rem; max-width:900px; margin:auto; box-shadow:0 30px 80px rgba(0,0,0,.45)">
+      <h2 style="margin-top:0">Anleitung</h2>
+      <ul>
+        <li><strong>+ Neues Event</strong> anlegen und benennen.</li>
+        <li>Mit <strong>+ Eintrag</strong> beliebig viele Zähler hinzufügen.</li>
+        <li>Unter <strong>Zählen</strong> klickst du auf die großen Buttons, um die Werte zu erhöhen.</li>
+        <li><strong>Teilen</strong> öffnet die Geräte‑Teilen‑Funktion oder eine E‑Mail (<em>Betreff: Ergebnis der Zählung</em>).</li>
+        <li><strong>Exportieren / Importieren</strong> sichern bzw. laden deine Events (mit XSS‑Schutz).</li>
+        <li><strong>Papierkorb</strong> zeigt gelöschte Events/Einträge – von dort kannst du wiederherstellen.</li>
+      </ul>
+      <div style="text-align:center; margin-top:1rem">
+        <button class="btn" onclick="toggleHelp()">Schließen</button>
+      </div>
     </div>
   </div>
-</div>
-<div class="topbar" style="text-align:center; margin-bottom:1rem">
-  <button onclick="createNewEvent()">+ Neues Event</button>
-</div>
+
   <div id="events"></div>
-  <div style="text-align:center; margin-top:2rem">
-    <button onclick="exportEvents()">📤 Exportieren</button>
-    <input type="file" id="importFile" accept="application/json" style="display:none" onchange="handleImport(event)" />
-    <button onclick="document.getElementById('importFile').click()">📥 Importieren</button>
+
+  <div id="trash" class="trash">
+    <h2>Papierkorb <small class="muted">(nicht persistent)</small></h2>
+    <div id="trash-events" class="trash-list"></div>
+    <div id="trash-entries" class="trash-list"></div>
+    <div style="display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.5rem">
+      <button class="btn-danger" onclick="emptyTrash()">Papierkorb leeren</button>
+      <button class="btn" onclick="toggleTrash()">Schließen</button>
+    </div>
   </div>
 
-  <script>
-    let events = JSON.parse(localStorage.getItem("events") || "[]");
-    const eventsDiv = document.getElementById("events");
+<script>
+// ====== State ======
+let events = JSON.parse(localStorage.getItem("events") || "[]");
+const eventsDiv = document.getElementById("events");
+let trash = { events: [], entries: [] };
 
-    function save() {
+// ====== Helpers ======
+function toggleHelp(){
+  const o = document.getElementById('helpOverlay');
+  o.style.display = (o.style.display==='none'||!o.style.display) ? 'block' : 'none';
+}
+
+function save(){
   localStorage.setItem("events", JSON.stringify(events));
   render();
 }
 
-function exportEvents() {
+function exportEvents(){
   const data = JSON.stringify(events, null, 2);
-  const blob = new Blob([data], { type: 'application/json' });
+  const blob = new Blob([data], { type:'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url;
-  a.download = 'events-export.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  a.href = url; a.download = 'events-export.json'; a.click();
+  URL.revokeObjectURL(url);
 }
 
-function handleImport(e) {
+function handleImport(e){
   const file = e.target.files[0];
-  if (!file || !file.name.endsWith('.json')) {
-    alert("Nur JSON-Dateien können importiert werden.");
-    return;
-  }
-
+  if (!file || !/\.json$/i.test(file.name)) { alert("Nur JSON-Dateien importieren."); return; }
   const reader = new FileReader();
   reader.onload = () => {
-    try {
-      // Entferne bösartige Inhalte
-    const sanitized = reader.result
-      .replace(/<script.*?>.*?<\/script>/gi, "")
-      .replace(/onerror\s*=\s*['\"].*?['\"]/gi, "")
-      .replace(/javascript:/gi, "");
-
+    try{
+      // FIX: valid regex (no invalid flags)
+      const sanitized = String(reader.result)
+        .replace(/<script[\s\S]*?<\/script>/gi, '')  // will be interpreted as <\/script> by parser; ensure single backslash
+        .replace(/on\w+\s*=\s*(['"]).*?\1/gi, '')
+        .replace(/javascript:/gi, '');
       const imported = JSON.parse(sanitized);
+      if (!Array.isArray(imported)) throw new Error("Erwarte ein Array von Events.");
       let changed = false;
-
-      imported.forEach(newEvent => {
-        if (typeof newEvent !== 'object' || !newEvent.id || !newEvent.name) return;
-
-        // Zusätzliche Sicherheitsprüfung
-        newEvent.name = newEvent.name.replace(/[<>]/g, '');
-        newEvent.entries = (newEvent.entries || []).filter(e =>
-          typeof e.label === 'string' && typeof e.count === 'number'
-        );
-
-        const idx = events.findIndex(ev => ev.id === newEvent.id);
-        if (idx >= 0) {
-          const overwrite = confirm(`Event '${newEvent.name}' existiert bereits. Überschreiben?`);
-          if (overwrite) {
-            events[idx] = newEvent;
-            changed = true;
+      imported.forEach(ne => {
+        if (!ne || typeof ne !== 'object') return;
+        if (!ne.id) ne.id = crypto.randomUUID();
+        ne.name = String(ne.name||'Ohne Titel').replace(/[<>]/g,'');
+        ne.entries = Array.isArray(ne.entries) ? ne.entries : [];
+        ne.entries = ne.entries.map(en => ({
+          id: en && en.id ? en.id : crypto.randomUUID(),
+          label: String(en && en.label || 'Eintrag').replace(/[<>]/g,''),
+          count: Number(en && en.count || 0)
+        }));
+        const i = events.findIndex(e => e.id === ne.id);
+        if (i >= 0){
+          if (confirm(`Event '${ne.name}' existiert bereits. Überschreiben?`)){
+            events[i] = ne; changed = true;
           }
-        } else {
-          events.push(newEvent);
-          changed = true;
-        }
+        } else { events.push(ne); changed = true; }
       });
-
-      if (changed) save();
-      else alert("Keine Änderungen importiert.");
-    } catch (err) {
-      alert("Fehler beim Import: " + err.message);
-    }
+      if (changed) save(); else alert("Keine Änderungen importiert.");
+    }catch(err){ alert("Fehler beim Import: " + err.message); }
   };
-
   reader.readAsText(file);
 }
 
+function createNewEvent(){
+  const name = prompt("Event-Name?") || "Neues Event";
+  events.push({
+    id: crypto.randomUUID(),
+    name,
+    status: 'new',
+    entries: [
+      { id: crypto.randomUUID(), label:"Mann", count:0 },
+      { id: crypto.randomUUID(), label:"Frau", count:0 }
+    ]
+  });
+  save();
+}
 
-render();
+function addEntry(ev){
+  ev.entries.push({ id: crypto.randomUUID(), label:"Neuer Eintrag", count:0 });
+  save();
+}
 
-function createNewEvent() {
-      const name = prompt("Event-Name?") || "Neues Event";
-      events.push({
-        id: Date.now(),
-        name,
-        status: "new",
-        entries: [
-          { label: "Mann", count: 0 },
-          { label: "Frau", count: 0 }
-        ]
-      });
+function shareEvent(ev){
+  const txt = `${ev.name}\n\n` + ev.entries.map(e => `${e.label}: ${e.count}`).join('\n');
+  const mailto = `mailto:?subject=${encodeURIComponent('Ergebnis der Zählung')}&body=${encodeURIComponent(txt)}`;
+  if (navigator.share){
+    navigator.share({ title:'Ergebnis der Zählung', text:txt }).catch(()=>window.open(mailto, '_blank'));
+  } else {
+    window.open(mailto, '_blank');
+  }
+}
+
+// ====== Render ======
+function render(){
+  eventsDiv.innerHTML = "";
+  events.forEach((event, idx) => {
+    const card = document.createElement('div');
+    card.className = 'event';
+
+    
+// Header
+const header = document.createElement('div');
+header.className = 'event-header';
+
+const nameInput = document.createElement('input');
+nameInput.value = event.name;
+nameInput.placeholder = "Event-Name";
+nameInput.disabled = event.status === 'terminated';
+nameInput.onchange = e=>{ event.name = e.target.value; save(); };
+header.appendChild(nameInput);
+
+// State controls
+const controls = document.createElement('div');
+controls.style.display = 'flex';
+controls.style.gap = '.5rem';
+controls.style.flexWrap = 'wrap';
+
+if (event.status === 'new') {
+  const startBtn = document.createElement('button');
+  startBtn.className = 'btn-primary';
+  startBtn.textContent = 'Starten';
+  startBtn.onclick = () => { event.status = 'running'; save(); };
+  controls.appendChild(startBtn);
+} else if (event.status === 'running') {
+  const stopBtn = document.createElement('button');
+  stopBtn.className = 'btn';
+  stopBtn.textContent = 'Event stoppen';
+  stopBtn.onclick = () => { event.status = 'stopped'; save(); };
+  controls.appendChild(stopBtn);
+} else if (event.status === 'stopped') {
+  const resumeBtn = document.createElement('button');
+  resumeBtn.className = 'btn-primary';
+  resumeBtn.textContent = 'Event fortsetzen';
+  resumeBtn.onclick = () => { event.status = 'running'; save(); };
+  controls.appendChild(resumeBtn);
+}
+
+if (event.status !== 'terminated') {
+  const termBtn = document.createElement('button');
+  termBtn.className = 'btn-danger';
+  termBtn.textContent = 'Event terminieren';
+  termBtn.onclick = () => {
+    if (confirm('Event wirklich terminieren? Dies kann nicht rückgängig gemacht werden.')) {
+      event.status = 'terminated';
       save();
     }
-
-    function render() {
-      eventsDiv.innerHTML = "";
-      events.forEach((event, idx) => {
-        const container = document.createElement("div");
-        container.className = "event" + (event.status === "terminated" ? " terminated" : "");
-
-        const nameInput = document.createElement("input");
-        nameInput.value = event.name;
-        nameInput.disabled = event.status === "terminated";
-        nameInput.onchange = e => {
-          event.name = e.target.value;
-          save();
-        };
-        container.appendChild(nameInput);
-
-        if (event.status === "new" || event.status === "running") {
-          event.entries.forEach((entry, i) => {
-            const row = document.createElement("div");
-            row.className = "entry-row";
-            const labelInput = document.createElement("input");
-            labelInput.value = entry.label;
-            labelInput.disabled = event.status === "running";
-            labelInput.onchange = e => {
-              event.entries[i].label = e.target.value;
-              save();
-            };
-            const delBtn = document.createElement("button");
-            delBtn.textContent = "Löschen";
-            delBtn.disabled = event.status === "running";
-            delBtn.onclick = () => {
-              event.entries.splice(i, 1);
-              save();
-            };
-            row.append(labelInput, delBtn);
-            container.appendChild(row);
-          });
-          const addBtn = document.createElement("button");
-          addBtn.textContent = "+ Eintrag";
-          addBtn.disabled = event.status === "running";
-          addBtn.onclick = () => {
-            event.entries.push({ label: "Neuer Eintrag", count: 0 });
-            save();
-          };
-          container.appendChild(addBtn);
-        } else if (event.status === "terminated") {
-          const table = document.createElement("table");
-          event.entries.forEach(entry => {
-            const row = document.createElement("tr");
-            row.innerHTML = `<td>${entry.label}</td><td>${entry.count}</td>`;
-            table.appendChild(row);
-          });
-          container.appendChild(table);
-        }
-
-        if (event.status === "running") {
-          const buttonRow = document.createElement("div");
-          buttonRow.className = "buttons count-buttons";
-          event.entries.forEach((entry, i) => {
-            const btn = document.createElement("button");
-            btn.textContent = `${entry.label} (${entry.count})`;
-            btn.onclick = () => {
-              event.entries[i].count++;
-              save();
-            };
-            buttonRow.appendChild(btn);
-          });
-          container.appendChild(buttonRow);
-        }
-
-        const btnRow = document.createElement("div");
-        btnRow.className = "buttons";
-
-        if (event.status === "new") {
-          const startBtn = document.createElement("button");
-          startBtn.textContent = "Starten";
-          startBtn.onclick = () => {
-            event.status = "running";
-            save();
-          };
-          btnRow.appendChild(startBtn);
-        } else if (event.status === "running") {
-          const stopBtn = document.createElement("button");
-          stopBtn.textContent = "Stoppen";
-          stopBtn.onclick = () => {
-            event.status = "stopped";
-            save();
-          };
-          btnRow.appendChild(stopBtn);
-        } else if (event.status === "stopped") {
-          const resumeBtn = document.createElement("button");
-          resumeBtn.textContent = "Weiterzählen";
-          resumeBtn.onclick = () => {
-            event.status = "running";
-            save();
-          };
-          btnRow.appendChild(resumeBtn);
-        }
-
-        if (event.status !== "terminated") {
-          const terminateBtn = document.createElement("button");
-          terminateBtn.textContent = "Terminieren";
-          terminateBtn.onclick = () => {
-            event.status = "terminated";
-            save();
-          };
-          btnRow.appendChild(terminateBtn);
-        }
-
-        const delBtn = document.createElement("button");
-        delBtn.textContent = "Löschen";
-        delBtn.onclick = () => {
-          if (confirm("Wirklich löschen?")) {
-            events.splice(idx, 1);
-            save();
-          }
-        };
-        btnRow.appendChild(delBtn);
-
-        if (event.status === "terminated") {
-          const shareBtn = document.createElement("button");
-          shareBtn.textContent = "Teilen";
-          shareBtn.onclick = () => {
-             const txt = `${event.name}\n\n` + event.entries.map(e => `${e.label}: ${e.count}`).join('\n');
-             navigator.share?.({ text: txt }) || alert(txt);
-          };
-          btnRow.appendChild(shareBtn);
-        }
-
-        container.appendChild(btnRow);
-        eventsDiv.appendChild(container);
-      });
-    }
-
-    render();
-  function toggleHelp() {
-  const overlay = document.getElementById('helpOverlay');
-  overlay.style.display = overlay.style.display === 'none' ? 'block' : 'none';
+  };
+  controls.appendChild(termBtn);
 }
+
+if (event.status === 'terminated') {
+  const shareBtn = document.createElement('button');
+  shareBtn.className = 'btn';
+  shareBtn.textContent = "Teilen";
+  shareBtn.onclick = () => shareEvent(event);
+  controls.appendChild(shareBtn);
+}
+
+// Event löschen (Papierkorb)
+const delEventBtn = document.createElement('button');
+delEventBtn.className = 'btn-ghost';
+delEventBtn.textContent = "Event löschen";
+delEventBtn.onclick = () => {
+  if (confirm("Event in den Papierkorb verschieben?")){
+    trash.events.push({ ...event, deletedAt: Date.now() });
+    events.splice(idx,1); save(); renderTrash(); updateTrashCount();
+  }
+};
+controls.appendChild(delEventBtn);
+
+header.appendChild(controls);
+card.appendChild(header);
+
+    // Entries editor
+    event.entries.forEach(entry => {
+      const row = document.createElement('div');
+      row.className = 'entry-row';
+
+      const label = document.createElement('input');
+      label.value = entry.label;
+      label.onchange = e=>{ entry.label = e.target.value; save(); };
+      label.disabled = event.status === 'terminated';
+      row.appendChild(label);
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'btn-ghost';
+      delBtn.textContent = "Löschen";
+      delBtn.onclick = () => {
+        if (confirm("Eintrag wirklich löschen?")){
+          trash.entries.push({ id: entry.id, label: entry.label, count: entry.count, parentId: event.id, parentName: event.name, deletedAt: Date.now() });
+          event.entries = event.entries.filter(e => e.id !== entry.id);
+          save(); renderTrash(); updateTrashCount();
+        }
+      };
+      row.appendChild(delBtn);
+
+      card.appendChild(row);
+    });
+
+    // Add entry button
+    const addRow = document.createElement('div');
+    addRow.className = 'section';
+    const addBtn = document.createElement('button');
+    addBtn.className = 'btn-primary';
+    addBtn.textContent = "+ Eintrag";
+    addBtn.onclick = () => addEntry(event);
+    addBtn.disabled = event.status === 'terminated';
+    addRow.appendChild(addBtn);
+    card.appendChild(addRow);
+
+    // Count section
+    const countSec = document.createElement('div');
+    countSec.className = 'section';
+    const countTitle = document.createElement('div');
+    countTitle.className = 'muted';
+    countTitle.textContent = "Zählen";
+    countSec.appendChild(countTitle);
+
+    const btnWrap = document.createElement('div');
+    btnWrap.className = 'count-buttons';
+    event.entries.forEach((entry, i) => {
+      const b = document.createElement('button');
+      b.textContent = `${entry.label} (${entry.count})`;
+      if (event.status === 'running') {
+        b.onclick = ()=>{ event.entries[i].count++; save(); };
+      } else {
+        b.disabled = true;
+      }
+      btnWrap.appendChild(b);
+    });
+    countSec.appendChild(btnWrap);
+    card.appendChild(countSec);
+
+    eventsDiv.appendChild(card);
+  });
+}
+
+// ====== Trash UI ======
+function toggleTrash(){
+  const t = document.getElementById('trash');
+  t.style.display = (t.style.display==='none' || !t.style.display) ? 'block' : 'none';
+  if (t.style.display === 'block') renderTrash();
+}
+
+function renderTrash(){
+  const evDiv = document.getElementById('trash-events');
+  const enDiv = document.getElementById('trash-entries');
+  if (!evDiv || !enDiv) return;
+
+  evDiv.innerHTML = '<h3>Events</h3>' + (trash.events.length ? '' : '<p class="muted">Keine gelöschten Events.</p>');
+  trash.events.forEach((e, i) => {
+    const wrap = document.createElement('div');
+    wrap.innerHTML = `<strong>${e.name}</strong> <small class="muted">(ID: ${e.id})</small>`;
+    const restore = document.createElement('button'); restore.className='btn'; restore.textContent = 'Wiederherstellen';
+    restore.onclick = () => { events.push(e); trash.events.splice(i,1); save(); renderTrash(); updateTrashCount(); };
+    const purge = document.createElement('button'); purge.className='btn-danger'; purge.textContent = 'Endgültig löschen';
+    purge.onclick = () => { trash.events.splice(i,1); renderTrash(); updateTrashCount(); };
+    wrap.append(' ', restore, ' ', purge);
+    evDiv.appendChild(wrap);
+  });
+
+  enDiv.innerHTML = '<h3>Einträge</h3>' + (trash.entries.length ? '' : '<p class="muted">Keine gelöschten Einträge.</p>');
+  trash.entries.forEach((en, i) => {
+    const wrap = document.createElement('div');
+    wrap.innerHTML = `<strong>${en.label}</strong> <small class="muted">(Event: ${en.parentName ?? en.parentId})</small>`;
+    const restore = document.createElement('button'); restore.className='btn'; restore.textContent = 'Wiederherstellen';
+    restore.onclick = () => {
+      const parent = events.find(ev => ev.id === en.parentId);
+      if (!parent) { alert('Event für diesen Eintrag existiert nicht (mehr).'); return; }
+      parent.entries.push({ id: en.id || crypto.randomUUID(), label: en.label, count: en.count || 0 });
+      trash.entries.splice(i,1); save(); renderTrash(); updateTrashCount();
+    };
+    const purge = document.createElement('button'); purge.className='btn-danger'; purge.textContent = 'Endgültig löschen';
+    purge.onclick = () => { trash.entries.splice(i,1); renderTrash(); updateTrashCount(); };
+    wrap.append(' ', restore, ' ', purge);
+    enDiv.appendChild(wrap);
+  });
+
+  updateTrashCount();
+}
+
+function emptyTrash(){
+  if (confirm('Papierkorb wirklich endgültig leeren?')){
+    trash.events = []; trash.entries = [];
+    renderTrash(); updateTrashCount();
+  }
+}
+
+function updateTrashCount(){
+  const span = document.getElementById('trash-count');
+  if (span) span.textContent = (trash.events.length + trash.entries.length);
+}
+
+// ====== Init ======
+render();
+renderTrash();
+updateTrashCount();
 </script>
 </body>
 </html>
